@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Nueva solicitud{% endblock %}
+{% block content %}
+<div class="fx-auth fx-auth--wide">
+  <h1>¿Qué se te dañó?</h1>
+  <p class="text-muted">Cuéntanos lo básico y te mostramos técnicos disponibles.</p>
+
+  <form method="post" enctype="multipart/form-data" class="fx-card needs-validation" novalidate>
+    {% csrf_token %}
+
+    <fieldset class="mb-4">
+      <legend class="form-label">Categoría del daño</legend>
+      <div class="fx-choice">
+        {% for c in categorias %}
+        <div>
+          <input type="radio" name="categoria" id="cat-{{ c.id }}" value="{{ c.id }}" required
+                 {% if preseleccion == c.id %}checked{% endif %}>
+          <label for="cat-{{ c.id }}"><i class="bi {{ c.icono }}"></i>{{ c.nombre }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="invalid-feedback d-block" hidden id="err-cat">Elige una categoría.</div>
+    </fieldset>
+
+    <div class="mb-4">
+      <div class="d-flex justify-content-between">
+        <label class="form-label" for="descripcion">Descripción</label>
+        <span class="small text-muted" id="cuenta-desc"></span>
+      </div>
+      <textarea class="form-control" id="descripcion" name="descripcion" rows="4"
+                minlength="10" maxlength="300" data-counter="#cuenta-desc" required
+                placeholder="Ej: Hay una fuga de agua debajo del lavaplatos y gotea todo el día."></textarea>
+      <div class="invalid-feedback">Describe el problema con al menos 10 caracteres.</div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label" for="direccion">Dirección del servicio</label>
+      <input class="form-control" id="direccion" name="direccion" value="{{ cliente.direccion }}" required>
+      <div class="form-text">La tomamos de tu perfil; puedes cambiarla para este servicio.</div>
+      <div class="invalid-feedback">Escribe la dirección donde se hará el servicio.</div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label" for="fotos">Fotos de evidencia <span class="fw-normal text-muted">(opcional)</span></label>
+      <input class="form-control" type="file" id="fotos" name="fotos" accept="image/jpeg,image/png"
+             multiple data-max-mb="5" data-max-files="3">
+      <div class="form-text">Hasta 3 fotos JPG o PNG, máximo 5 MB cada una.</div>
+    </div>
+
+    <div class="mb-4">
+      <span class="form-label d-block">Urgencia</span>
+      <div class="fx-seg" role="radiogroup" aria-label="Urgencia" id="urgencia">
+        <button type="button" class="is-on" role="radio" aria-checked="true" data-valor="normal">Normal</button>
+        <button type="button" role="radio" aria-checked="false" data-valor="urgente">Urgente</button>
+      </div>
+      <input type="hidden" name="urgencia" id="urgencia-valor" value="normal">
+    </div>
+
+    <button class="btn btn-fx btn-lg w-100" type="submit">Buscar técnicos</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Segmentado normal/urgente
+  const seg = document.getElementById("urgencia");
+  seg.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    seg.querySelectorAll("button").forEach((x) => {
+      const on = x === b; x.classList.toggle("is-on", on); x.setAttribute("aria-checked", on);
+    });
+    document.getElementById("urgencia-valor").value = b.dataset.valor;
+  });
+  // Los radios required ya validan solos; mostramos el aviso si falta la categoría
+  document.querySelector("form.needs-validation").addEventListener("submit", () => {
+    document.getElementById("err-cat").hidden = !!document.querySelector("input[name=categoria]:checked");
+  });
+</script>
+{% endblock %}

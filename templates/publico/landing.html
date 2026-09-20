@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Técnicos a domicilio{% endblock %}
+{% block content %}
+<section class="fx-hero">
+  <div class="fx-hero__inner">
+    <div>
+      <h1>Se dañó algo. Ya hay un técnico cerca.</h1>
+      <p>Cuéntanos qué pasó, elige a un técnico verificado de tu zona y paga cuando termine el trabajo.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-ink btn-lg" href="{% url 'registro_cliente' %}">Pedir un técnico</a>
+        <a class="btn btn-line btn-lg bg-white" href="{% url 'registro_tecnico' %}">Soy técnico</a>
+      </div>
+    </div>
+
+    <div class="fx-hero__card" aria-hidden="true">
+      <div class="fx-tech">
+        <div class="fx-tech__top">
+          <div class="fx-avatar">CR</div>
+          <div>
+            <p class="fx-tech__name">Camilo Restrepo</p>
+            <div class="fx-tech__spec"><i class="bi bi-droplet-half"></i>Plomería</div>
+          </div>
+        </div>
+        <div class="fx-tech__meta">
+          <span><i class="bi bi-star-fill fx-star"></i>4,9</span>
+          <span><i class="bi bi-signpost-2"></i>1,2 km</span>
+          <span class="fx-badge fx-badge--finalizada">Disponible</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mt-4">
+  <div class="fx-section-title"><h2>¿Qué necesitas arreglar?</h2></div>
+  <div class="fx-cats">
+    {% for c in categorias %}
+    <a class="fx-cat" href="{% url 'registro_cliente' %}">
+      <div class="fx-cat__icon"><i class="bi {{ c.icono }}"></i></div>{{ c.nombre }}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-5">
+  <div class="fx-section-title"><h2>Así funciona</h2></div>
+  <div class="fx-steps">
+    <div class="fx-card fx-step">
+      <h3>Cuéntanos el daño</h3>
+      <p class="text-muted mb-0">Elige la categoría, describe el problema y, si quieres, adjunta fotos.</p>
+    </div>
+    <div class="fx-card fx-step">
+      <h3>Elige a tu técnico</h3>
+      <p class="text-muted mb-0">Compara calificación, distancia y precio de referencia en una lista o en el mapa.</p>
+    </div>
+    <div class="fx-card fx-step">
+      <h3>Paga al terminar</h3>
+      <p class="text-muted mb-0">Cuando el técnico finaliza el servicio, pagas en la app y calificas.</p>
+    </div>
+  </div>
+</section>
+
+<section class="mt-5">
+  <div class="fx-cta-band d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+      <h2 class="h3 mb-1">¿Trabajas con tus manos?</h2>
+      <p class="mb-0 opacity-75">Regístrate como técnico y recibe solicitudes de tu zona.</p>
+    </div>
+    <a class="btn btn-fx btn-lg" href="{% url 'registro_tecnico' %}">Registrarme como técnico</a>
+  </div>
+</section>
+{% endblock %}
