@@ -1,4 +1,7 @@
+from django.contrib.auth import login
 from django.shortcuts import redirect, render
+
+from core.forms import RegistroClienteForm, RegistroTecnicoForm
 
 from . import datos_falsos as d
 
@@ -28,14 +31,27 @@ def login_view(request):
 
 def registro_cliente(request):
     if request.method == "POST":
-        return redirect("cliente_inicio")  # FN-1: entra directo a su panel
-    return render(request, "publico/registro_cliente.html", _ctx("publico"))
+        form = RegistroClienteForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+            login(request, usuario)  # FN-1: autentica automáticamente tras registrarse
+            return redirect("cliente_inicio")
+    else:
+        form = RegistroClienteForm()
+    return render(request, "publico/registro_cliente.html", _ctx("publico", form=form))
 
 
 def registro_tecnico(request):
     if request.method == "POST":
-        return render(request, "publico/registro_tecnico_ok.html", _ctx("publico"))  # FN-8
-    return render(request, "publico/registro_tecnico.html", _ctx("publico", categorias=d.CATEGORIAS))
+        form = RegistroTecnicoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            # FN-8: a diferencia del cliente, NO se loguea automáticamente:
+            # queda pendiente de aprobación (FN-14).
+            return render(request, "publico/registro_tecnico_ok.html", _ctx("publico"))
+    else:
+        form = RegistroTecnicoForm()
+    return render(request, "publico/registro_tecnico.html", _ctx("publico", form=form))
 
 
 # ---------- Cliente ----------

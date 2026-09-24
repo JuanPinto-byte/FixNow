@@ -7,54 +7,72 @@
 
   <form method="post" enctype="multipart/form-data" class="fx-card needs-validation" novalidate data-pass-form>
     {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+    {% endif %}
+
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label" for="cedula">Cédula</label>
-        <input class="form-control" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]{6,10}" maxlength="10" required>
-        <div class="invalid-feedback">Escribe entre 6 y 10 dígitos.</div>
+        {{ form.cedula }}
+        {% for error in form.cedula.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
       <div class="col-md-6">
-        <label class="form-label" for="nombre">Nombre completo</label>
-        <input class="form-control" id="nombre" name="nombre" autocomplete="name" required>
-        <div class="invalid-feedback">Escribe tu nombre completo.</div>
+        <label class="form-label" for="nombre_completo">Nombre completo</label>
+        {{ form.nombre_completo }}
+        {% for error in form.nombre_completo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
       <div class="col-md-6">
         <label class="form-label" for="correo">Correo electrónico</label>
-        <input class="form-control" type="email" id="correo" name="correo" autocomplete="email" required>
-        <div class="invalid-feedback">Escribe un correo válido.</div>
+        {{ form.correo }}
+        {% for error in form.correo.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
       <div class="col-md-6">
         <label class="form-label" for="telefono">Teléfono</label>
-        <input class="form-control" type="tel" id="telefono" name="telefono" autocomplete="tel" required>
-        <div class="invalid-feedback">Escribe tu teléfono.</div>
+        {{ form.telefono }}
+        {% for error in form.telefono.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
       <div class="col-md-6">
         <label class="form-label" for="especialidad">Especialidad</label>
-        <select class="form-select" id="especialidad" name="especialidad" required>
-          <option value="" selected disabled>Elige una</option>
-          {% for c in categorias %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}
-        </select>
-        <div class="invalid-feedback">Elige tu especialidad.</div>
+        {{ form.especialidad }}
+        {% for error in form.especialidad.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
       <div class="col-md-6">
         <label class="form-label" for="ciudad">Ciudad</label>
-        <input class="form-control" id="ciudad" name="ciudad" required>
-        <div class="invalid-feedback">Escribe tu ciudad.</div>
+        {{ form.ciudad }}
+        {% for error in form.ciudad.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
       <div class="col-12">
         <label class="form-label" for="certificacion">Documento de certificación</label>
-        <input class="form-control" type="file" id="certificacion" name="certificacion"
-               accept="application/pdf,image/*" data-max-mb="5" data-max-files="1" required>
+        {{ form.documento_certificacion }}
         <div class="form-text">Obligatorio. PDF o imagen, máximo 5 MB.</div>
-        <div class="invalid-feedback">Adjunta tu certificación para poder registrarte.</div>
+        {% for error in form.documento_certificacion.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
       </div>
-      <div class="col-md-6">{% include "partials/campos_clave.html" %}</div>
+      <div class="col-md-6">
+        <label class="form-label" for="password">Contraseña</label>
+        {{ form.password }}
+        <ul class="fx-checklist" aria-live="polite">
+          <li data-regla="largo">Mínimo 8 caracteres</li>
+          <li data-regla="mayus">Una mayúscula</li>
+          <li data-regla="numero">Un número</li>
+          <li data-regla="simbolo">Un símbolo (por ejemplo ! # $ %)</li>
+        </ul>
+        {% for error in form.password.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="password2">Confirmar contraseña</label>
+        {{ form.password2 }}
+        {% for error in form.password2.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+      </div>
     </div>
 
     <div class="form-check my-4">
-      <input class="form-check-input" type="checkbox" id="terminos" name="terminos" required>
+      {{ form.terminos }}
       <label class="form-check-label" for="terminos">Acepto los <a href="#" data-pronto>términos y condiciones</a></label>
-      <div class="invalid-feedback">Debes aceptar los términos para continuar.</div>
+      {% for error in form.terminos.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
     </div>
 
     <button class="btn btn-fx btn-lg w-100" type="submit">Enviar registro</button>
