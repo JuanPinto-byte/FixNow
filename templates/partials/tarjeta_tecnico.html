@@ -15,6 +15,7 @@
     </span>
     <span><i class="bi bi-signpost-2"></i>{{ t.km|floatformat:1 }} km</span>
   </div>
+  {% if t.zona_cobertura %}<div class="small text-muted mt-2"><i class="bi bi-geo-alt"></i> {{ t.zona_cobertura }}</div>{% endif %}
   <div class="fx-tech__foot">
     <div>
       <div class="text-muted small">Precio de referencia</div>

@@ -2,15 +2,16 @@
 {% block title %}Solicitudes{% endblock %}
 {% block content %}
 {# Disponibilidad (FN-10) #}
-<div class="fx-card d-flex align-items-center justify-content-between gap-3 mb-4" id="cardDisp">
+<form class="fx-card d-flex align-items-center justify-content-between gap-3 mb-4" id="formDisp" method="post" action="{% url 'cambiar_disponibilidad' %}">
+  {% csrf_token %}
   <div>
-    <div class="fw-bold" id="dispTitulo">Estás disponible</div>
-    <div class="text-muted small" id="dispTexto">Los clientes cercanos pueden elegirte.</div>
+    <div class="fw-bold" id="dispTitulo">{% if perfil.disponible %}Estás disponible{% else %}Estás en pausa{% endif %}</div>
+    <div class="text-muted small" id="dispTexto">{% if perfil.disponible %}Los clientes cercanos pueden elegirte.{% else %}No apareces en las búsquedas de los clientes.{% endif %}</div>
   </div>
   <div class="form-check form-switch m-0">
-    <input class="form-check-input" type="checkbox" role="switch" id="disponibilidad" checked aria-label="Disponibilidad">
+    <input class="form-check-input" type="checkbox" role="switch" id="disponibilidad" name="disponible" {% if perfil.disponible %}checked{% endif %} aria-label="Disponibilidad" onchange="this.form.requestSubmit()">
   </div>
-</div>
+</form>
 
 <div class="d-flex align-items-baseline justify-content-between mb-3">
   <h1 class="h3 mb-0">Solicitudes pendientes</h1>
@@ -78,7 +79,7 @@
   function contar() {
     const n = bandeja.querySelectorAll("[data-solicitud]").length;
     conteo.textContent = n === 1 ? "1 solicitud" : `${n} solicitudes`;
-    vacio.hidden = n > 0 || !sw.checked;
+    vacio.hidden = n > 0;
   }
 
   // Aceptar / rechazar (FN-11)
@@ -95,7 +96,6 @@
     const on = sw.checked;
     document.getElementById("dispTitulo").textContent = on ? "Estás disponible" : "Estás en pausa";
     document.getElementById("dispTexto").textContent = on ? "Los clientes cercanos pueden elegirte." : "No apareces en las búsquedas de los clientes.";
-    bandeja.hidden = !on;
     pausa.hidden = on;
     contar();
     fxToast(on ? "Disponibilidad activada" : "Disponibilidad pausada");

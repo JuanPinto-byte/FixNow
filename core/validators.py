@@ -4,7 +4,7 @@ from django.core.validators import RegexValidator
 
 # FN-1 / FN-8: cédula solo números, de 6 a 10 dígitos.
 validar_cedula = RegexValidator(
-    regex=r"^\d{6,10}$",
+    regex=r"^[0-9]{6,10}$",
     message="La cédula debe tener solo números, entre 6 y 10 dígitos.",
 )
 

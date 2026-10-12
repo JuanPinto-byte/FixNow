@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from .models import Categoria, PerfilTecnico, Usuario
-from .validators import validar_certificacion
+from .validators import validar_certificacion, validar_foto
 
 ATRS_TEXTO = "form-control"
 ATRS_CHECK = "form-check-input"
@@ -94,6 +94,12 @@ class RegistroClienteForm(forms.ModelForm):
         _validar_politica_password(password)
         return password
 
+    def clean_correo(self):
+        correo = self.cleaned_data["correo"].strip()
+        if Usuario.objects.filter(correo__iexact=correo).exists():
+            raise ValidationError("Ya existe una cuenta registrada con este correo.")
+        return correo
+
     def clean(self):
         cleaned = super().clean()
         p1, p2 = cleaned.get("password"), cleaned.get("password2")
@@ -109,6 +115,99 @@ class RegistroClienteForm(forms.ModelForm):
         if commit:
             usuario.save()
         return usuario
+
+
+class PerfilTecnicoForm(forms.Form):
+    nombre_completo = forms.CharField(max_length=150, label="Nombre completo")
+    telefono = forms.CharField(max_length=20, label="Teléfono")
+    correo = forms.EmailField(label="Correo electrónico")
+    especialidad = forms.ChoiceField(
+        label="Especialidad", choices=Categoria.choices,
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    ciudad = forms.CharField(max_length=100, label="Ciudad")
+    precio_referencia = forms.DecimalField(
+        label="Precio de referencia", required=False, min_value=0,
+        widget=forms.NumberInput(attrs={"min": "0", "step": "1000"}),
+    )
+    zona_cobertura = forms.CharField(
+        label="Zona de cobertura", required=False, max_length=255,
+    )
+    foto_perfil = forms.ImageField(
+        label="Foto de perfil", required=False, validators=[validar_foto],
+    )
+    password_actual = forms.CharField(
+        label="Contraseña actual", required=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+    password_nueva = forms.CharField(
+        label="Nueva contraseña", required=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+    )
+    password_confirmacion = forms.CharField(
+        label="Confirmar nueva contraseña", required=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+    )
+
+    def __init__(self, *args, usuario, **kwargs):
+        self.usuario = usuario
+        self.perfil = usuario.perfil_tecnico
+        kwargs.setdefault("initial", {
+            "nombre_completo": usuario.nombre_completo,
+            "telefono": usuario.telefono,
+            "correo": usuario.correo,
+            "especialidad": self.perfil.especialidad,
+            "ciudad": self.perfil.ciudad,
+            "precio_referencia": self.perfil.precio_referencia,
+            "zona_cobertura": self.perfil.zona_cobertura,
+        })
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if not isinstance(field.widget, (forms.CheckboxInput, forms.FileInput, forms.PasswordInput)):
+                field.widget.attrs.setdefault("class", "form-control")
+
+    def clean_correo(self):
+        correo = self.cleaned_data["correo"]
+        if Usuario.objects.filter(correo__iexact=correo).exclude(pk=self.usuario.pk).exists():
+            raise ValidationError("Ya existe una cuenta registrada con este correo.")
+        return correo
+
+    def clean(self):
+        cleaned = super().clean()
+        actual = cleaned.get("password_actual")
+        nueva = cleaned.get("password_nueva")
+        confirmacion = cleaned.get("password_confirmacion")
+        if actual or nueva or confirmacion:
+            if not actual or not self.usuario.check_password(actual):
+                self.add_error("password_actual", "La contraseña actual no es correcta.")
+            if nueva:
+                try:
+                    _validar_politica_password(nueva)
+                except ValidationError as error:
+                    self.add_error("password_nueva", error)
+            if nueva and confirmacion and nueva != confirmacion:
+                self.add_error("password_confirmacion", "Las contraseñas no coinciden.")
+            if not nueva:
+                self.add_error("password_nueva", "Escribe la nueva contraseña.")
+            if nueva and not confirmacion:
+                self.add_error("password_confirmacion", "Confirma la nueva contraseña.")
+        return cleaned
+
+    def save(self):
+        self.usuario.nombre_completo = self.cleaned_data["nombre_completo"]
+        self.usuario.telefono = self.cleaned_data["telefono"]
+        self.usuario.save(update_fields=["nombre_completo", "telefono"])
+
+        for campo in ("especialidad", "ciudad", "precio_referencia", "zona_cobertura"):
+            setattr(self.perfil, campo, self.cleaned_data[campo])
+        if self.cleaned_data.get("foto_perfil"):
+            self.perfil.foto_perfil = self.cleaned_data["foto_perfil"]
+        self.perfil.save()
+
+        if self.cleaned_data.get("password_nueva"):
+            self.usuario.set_password(self.cleaned_data["password_nueva"])
+            self.usuario.save(update_fields=["password"])
+        return self.usuario
 
 
 class RegistroTecnicoForm(forms.ModelForm):
@@ -166,6 +265,12 @@ class RegistroTecnicoForm(forms.ModelForm):
         password = self.cleaned_data["password"]
         _validar_politica_password(password)
         return password
+
+    def clean_correo(self):
+        correo = self.cleaned_data["correo"].strip()
+        if Usuario.objects.filter(correo__iexact=correo).exists():
+            raise ValidationError("Ya existe una cuenta registrada con este correo.")
+        return correo
 
     def clean(self):
         cleaned = super().clean()

@@ -21,6 +21,7 @@
   {% url 'tecnicos' as u_tecnicos %}
   {% url 'cliente_historial' as u_cli_hist %}
   {% url 'tecnico_solicitudes' as u_tec_sol %}
+  {% url 'tecnico_perfil' as u_tec_perfil %}
   {% url 'admin_tecnicos' as u_adm_tec %}
 
   <header class="fx-header">
@@ -43,7 +44,7 @@
         <nav class="fx-nav" aria-label="Principal">
           <a class="fx-nav__item {% if request.path == u_tec_sol %}is-active{% endif %}" href="{{ u_tec_sol }}"><i class="bi bi-inbox-fill"></i><span>Solicitudes</span></a>
           <a class="fx-nav__item" href="#" data-pronto><i class="bi bi-clock-history"></i><span>Historial</span></a>
-          <a class="fx-nav__item" href="#" data-pronto><i class="bi bi-person-circle"></i><span>Perfil</span></a>
+          <a class="fx-nav__item {% if request.path == u_tec_perfil %}is-active{% endif %}" href="{{ u_tec_perfil }}"><i class="bi bi-person-circle"></i><span>Perfil</span></a>
         </nav>
       {% elif rol == 'admin' %}
         <nav class="fx-nav" aria-label="Principal">
@@ -62,12 +63,19 @@
             <i class="bi bi-bell-fill"></i>
             {% if n_notif %}<span class="fx-bell__dot">{{ n_notif }}</span>{% endif %}
           </a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="btn btn-line btn-sm" type="submit">Salir</button>
+          </form>
         {% endif %}
       </div>
     </div>
   </header>
 
   <main id="contenido" class="fx-main">
+    {% if messages %}
+      {% for message in messages %}<div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert">{{ message }}</div>{% endfor %}
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
 
